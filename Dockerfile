@@ -119,6 +119,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     nano \
     ffmpeg \
     git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 USER $NB_UID
@@ -204,3 +205,10 @@ ENTRYPOINT ["tini", "-g", "--"]
 CMD ["start-notebook.sh"]
 #CMD ["python", "work/test_torch.py"]
 
+
+# kite do not work at the moment!
+# install kite
+#RUN bash -c echo $(sed "s/read -r -e -p \"Press enter to continue...\"//g" \
+#        "$(wget -q -O - https://linux.kite.com/dls/linux/current)")
+
+# you need to run "~/.local/share/kite/login-user" to login into kite
