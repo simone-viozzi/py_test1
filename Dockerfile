@@ -150,7 +150,7 @@ RUN conda install --quiet --yes 'ipywidgets' \
     'h5py' \
     'beautifulsoup4' \
     'protobuf' \
-    'xlrd' 
+    'xlrd'
 
 # Activate ipywidgets extension in the environment that runs the notebook server
 RUN conda clean --all -f -y && \
@@ -178,6 +178,8 @@ ENV XDG_CACHE_HOME /home/$NB_USER/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
     fix-permissions /home/$NB_USER
 
+RUN pip3 install --no-input -q 'jupyterlab-kite'
+
 # Jupyter Notebook
 EXPOSE 8888
 
@@ -191,7 +193,6 @@ COPY test_torch.py "/home/$NB_USER/work/test_torch.py"
 # Fix permissions on /etc/jupyter as root
 USER root
 RUN fix-permissions /etc/jupyter/
-#RUN fix-permissions ~/.local/share/jupyter/
 RUN fix-permissions /usr/local/bin/
 RUN chmod a+rx /usr/local/bin/*
 
@@ -206,9 +207,12 @@ CMD ["start-notebook.sh"]
 #CMD ["python", "work/test_torch.py"]
 
 
+EXPOSE 46624
+
+ENV JUPYTER_ENABLE_LAB 1
+
 # kite do not work at the moment!
 # install kite
-#RUN bash -c echo $(sed "s/read -r -e -p \"Press enter to continue...\"//g" \
-#        "$(wget -q -O - https://linux.kite.com/dls/linux/current)")
+#RUN bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current | sed "s/read -r -e -p \"Press enter to continue...\"//g")"
 
 # you need to run "~/.local/share/kite/login-user" to login into kite
