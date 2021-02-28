@@ -204,15 +204,8 @@ USER $NB_UID
 # Configure container startup
 ENTRYPOINT ["tini", "-g", "--"]
 CMD ["start-notebook.sh"]
-#CMD ["python", "work/test_torch.py"]
 
 
-EXPOSE 46624
+#ENV JUPYTER_ENABLE_LAB 1
+#ENV JUPYTERHUB_API_TOKEN 1
 
-ENV JUPYTER_ENABLE_LAB 1
-
-# kite do not work at the moment!
-# install kite
-#RUN bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current | sed "s/read -r -e -p \"Press enter to continue...\"//g")"
-
-# you need to run "~/.local/share/kite/login-user" to login into kite
