@@ -67,9 +67,6 @@ RUN mkdir "/home/$NB_USER/work" && \
 
 USER root
 
-# Install conda as jovyan and check the md5 sum provided on the download site
-ENV CONDA_VERSION=4.9.2
-
 #---------------- Notebook stuff ----------------------
 # Install Tini
 RUN conda install --quiet --yes 'tini' && \
@@ -98,7 +95,7 @@ RUN conda install --quiet --yes \
 #---------------- minimal notebook ----------------
 # Install all OS dependencies for fully functional notebook server
 # ffmpeg for matplotlib anim
-RUN apt-get update && apt-get install -yq --no-install-recommends \
+RUN apt-get install -yq --no-install-recommends \
     emacs \
     inkscape \
     jed \
@@ -120,10 +117,12 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     ffmpeg \
     git \
     curl \
+    && apt-get clean \
+    && apt-get -qy autoclean \
+    && apt-get -qy autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 USER $NB_UID
-
 
 # Install Python 3 packages
 RUN conda install --quiet --yes -c conda-forge openblas
@@ -150,7 +149,8 @@ RUN conda install --quiet --yes 'ipywidgets' \
     'h5py' \
     'beautifulsoup4' \
     'protobuf' \
-    'xlrd'
+    'xlrd' \
+    'sympy' 
 
 # Activate ipywidgets extension in the environment that runs the notebook server
 RUN conda clean --all -f -y && \
@@ -158,9 +158,7 @@ RUN conda clean --all -f -y && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn && \
-    rm -rf /home/$NB_USER/.node-gyp && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
+    rm -rf /home/$NB_USER/.node-gyp
 
 
 # Install facets which does not have a pip or conda package at the moment
@@ -169,16 +167,12 @@ RUN cd /tmp && \
     cd facets && \
     jupyter nbextension install facets-dist/ --sys-prefix && \
     cd && \
-    rm -rf /tmp/facets && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
+    rm -rf /tmp/facets
 
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME /home/$NB_USER/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
     fix-permissions /home/$NB_USER
-
-RUN pip3 install --no-input -q 'jupyterlab-kite'
 
 # Jupyter Notebook
 EXPOSE 8888
@@ -192,9 +186,11 @@ COPY test_torch.py "/home/$NB_USER/work/test_torch.py"
 
 # Fix permissions on /etc/jupyter as root
 USER root
-RUN fix-permissions /etc/jupyter/
-RUN fix-permissions /usr/local/bin/
-RUN chmod a+rx /usr/local/bin/*
+RUN fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER && \
+    fix-permissions /etc/jupyter/ && \
+    fix-permissions /usr/local/bin/ && \
+    chmod a+rx /usr/local/bin/*
 
 WORKDIR $HOME
 

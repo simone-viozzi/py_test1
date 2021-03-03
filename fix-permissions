@@ -22,7 +22,6 @@ for d in "$@"; do
             -group $NB_GID \
             -a -perm -g+rwX  \
         \) \
-        -exec printf "{}\n" \; \
         -exec chgrp $NB_GID "{}" \; \
         -exec chmod g+rwX "{}" \; 
     # setuid, setgid *on directories only*
